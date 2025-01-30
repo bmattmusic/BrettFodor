@@ -1,5 +1,11 @@
 // src/lib/printful.ts
-interface PrintfulProduct {
+interface PrintfulResponse {
+    result: PrintfulProduct[]
+    code: number
+    error?: string
+  }
+  
+  interface PrintfulProduct {
     id: number
     name: string
     variants: PrintfulVariant[]
@@ -39,8 +45,7 @@ interface PrintfulProduct {
     preview_url: string
   }
   
-  // src/lib/printful.ts
-export class PrintfulClient {
+  export class PrintfulClient {
     private readonly baseUrl = 'https://api.printful.com'
     private readonly headers: HeadersInit
   
@@ -56,7 +61,7 @@ export class PrintfulClient {
       }
     }
   
-    async getSyncProducts(): Promise<any[]> {
+    async getSyncProducts(): Promise<PrintfulProduct[]> {
       const response = await fetch(`${this.baseUrl}/store/products`, {
         headers: this.headers,
         cache: 'no-store'
@@ -67,7 +72,7 @@ export class PrintfulClient {
         throw new Error(`Failed to fetch products: ${response.statusText} - ${errorText}`)
       }
   
-      const data = await response.json()
+      const data = await response.json() as PrintfulResponse
       return data.result
     }
   }

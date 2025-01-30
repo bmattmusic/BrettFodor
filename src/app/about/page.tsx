@@ -1,4 +1,3 @@
-// src/app/about/page.tsx
 'use client'
 
 import { motion } from 'framer-motion'
@@ -45,7 +44,7 @@ const technologiesAndTools = {
   "Development & Architecture": [
     "Next.js", "React", "TypeScript", "Node.js", "GraphQL",
     "REST APIs", "Microservices", "Event-Driven Architecture",
-    "Builder.io", "Headless CMS", "PWAs", "Service Workers", "builder.io"
+    "Builder.io", "Headless CMS", "PWAs", "Service Workers"
   ],
   "Cloud & Infrastructure": [
     "AWS", "Azure", "Docker", "Kubernetes", "CI/CD",
@@ -174,7 +173,7 @@ export default function AboutPage() {
             transition={{ delay: 0.6 }}
             className="text-center"
           >
-            <h2 className="text-2xl font-bold mb-6">Let's Connect</h2>
+            <h2 className="text-2xl font-bold mb-6">Let&apos;s Connect</h2>
             <div className="flex justify-center gap-6">
               <a
                 href="https://github.com/brettfodor1"

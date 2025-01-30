@@ -19,7 +19,7 @@ const t = initTRPC.context().create({
   },
 })
 
-const isAuthed = t.middleware(async ({ next, ctx }) => {
+const isAuthed = t.middleware(async ({ next }) => {
   const session = await getServerSession(authOptions)
   
   if (!session?.user) {
