@@ -1,4 +1,27 @@
+// src/app/api/printful/products/route.ts
 import { NextResponse } from "next/server";
+
+interface PrintfulSyncVariant {
+  retail_price: string;
+}
+
+interface PrintfulProduct {
+  id: number;
+  name: string;
+  thumbnail_url: string;
+  sync_variants: PrintfulSyncVariant[];
+}
+
+interface PrintfulAPIResponse {
+  result: PrintfulProduct[];
+}
+
+interface MappedProduct {
+  id: number;
+  name: string;
+  thumbnailUrl: string;
+  retailPrice: number;
+}
 
 const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
@@ -13,69 +36,25 @@ export async function GET() {
       }
     });
 
-    const data = await response.json();
+    const data = await response.json() as PrintfulAPIResponse;
     
     if (data.result) {
-      console.log("Raw Result:", data.result[0]); // Log first product raw data
-      
-      const products = data.result.map((item: any) => {
-        console.log("Item before mapping:", item);
-        
-        // Extract data from result object
-        const mappedProduct = {
-          id: item.id,
-          name: item.name,
-          thumbnailUrl: item.thumbnail_url,
-          retailPrice: item.sync_variants?.[0]?.retail_price ? 
-            parseFloat(item.sync_variants[0].retail_price) : 26.50 // Default price for testing
-        };
-        
-        console.log("Mapped product:", mappedProduct);
-        return mappedProduct;
-      });
+      const products: MappedProduct[] = data.result.map((item) => ({
+        id: item.id,
+        name: item.name,
+        thumbnailUrl: item.thumbnail_url,
+        retailPrice: item.sync_variants?.[0]?.retail_price ? 
+          parseFloat(item.sync_variants[0].retail_price) : 26.50
+      }));
 
-      console.log("Final products array:", products);
       return NextResponse.json(products);
     }
     
     throw new Error('Invalid API response structure');
-  } catch (error: any) {
-    console.error('API Error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'Unknown error occurred' }, { status: 500 });
   }
 }
-// import { NextRequest, NextResponse } from 'next/server';
-
-// const PRINTFUL_API = 'https://api.printful.com';
-// const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
-// const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
-
-// export async function GET() {
-//   try {
-//     const res = await fetch(`${PRINTFUL_API}/store/products`, {
-//       headers: {
-//         Authorization: `Bearer ${PRINTFUL_TOKEN}`,
-//         'X-PF-Store-Id': PRINTFUL_STORE_ID, // Include store ID here
-//       },
-//     });
-
-//     if (!res.ok) {
-//       throw new Error('Failed to fetch products from Printful');
-//     }
-
-//     const data = await res.json();
-
-//     const products = data.result.map((product: any) => ({
-//       id: product.id,
-//       name: product.name,
-//       thumbnailUrl: product.thumbnail_url,
-//       retailPrice: product.sync_variants?.[0]?.retail_price
-//         ? parseFloat(product.sync_variants[0].retail_price)
-//         : 0.0, // Fallback price if not available
-//     }));
-
-//     return NextResponse.json(products);
-//   } catch (error: any) {
-//     return NextResponse.json({ error: error.message }, { status: 500 });
-//   }
-// }

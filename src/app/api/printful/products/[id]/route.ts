@@ -1,6 +1,49 @@
 // src/app/api/printful/products/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
+interface PrintfulFile {
+  type: string;
+  preview_url: string;
+}
+
+interface PrintfulVariant {
+  id: number;
+  name: string;
+  size: string;
+  color: string;
+  retail_price: string;
+  files: PrintfulFile[];
+}
+
+interface PrintfulSyncProduct {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+interface PrintfulAPIResponse {
+  result: {
+    sync_product: PrintfulSyncProduct;
+    sync_variants: PrintfulVariant[];
+  };
+}
+
+interface MappedVariant {
+  id: number;
+  name: string;
+  size: string;
+  color: string;
+  price: number;
+  imageUrl: string | null;
+}
+
+interface MappedProduct {
+  id: number;
+  name: string;
+  description: string;
+  variants: MappedVariant[];
+}
+
 const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
@@ -19,19 +62,17 @@ export async function GET(
       }
     });
 
-    const data = await response.json();
+    const data = await response.json() as PrintfulAPIResponse;
     
     if (data.result) {
-      // Get the base product name by removing size and color from any variant
       const baseName = data.result.sync_variants[0].name.split(' / ')[0];
       
-      const product = {
+      const product: MappedProduct = {
         id: data.result.sync_product.id,
         name: baseName,
         description: data.result.sync_product.description || '',
-        variants: data.result.sync_variants?.map((variant: any) => {
-          // Find the preview image for this variant
-          const previewFile = variant.files.find((f: any) => f.type === 'preview') || variant.files[0];
+        variants: data.result.sync_variants.map((variant) => {
+          const previewFile = variant.files.find(f => f.type === 'preview') || variant.files[0];
           
           return {
             id: variant.id,
@@ -40,16 +81,18 @@ export async function GET(
             color: variant.color,
             price: parseFloat(variant.retail_price),
             imageUrl: previewFile?.preview_url || null
-          }
-        }) || [],
+          };
+        }),
       };
       
       return NextResponse.json(product);
     }
     
     throw new Error('Product not found');
-  } catch (error: any) {
-    console.error('Error fetching product:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    if (error instanceof Error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+    return NextResponse.json({ error: 'Unknown error occurred' }, { status: 500 });
   }
 }
