@@ -1,4 +1,3 @@
-// src/app/api/printful/products/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 
 interface PrintfulFile {
@@ -50,51 +49,53 @@ const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } } // ✅ Correct typing
-) {
+  context: { params: Record<string, string | undefined> } // ✅ Fixed typing for Next.js 15+
+): Promise<NextResponse> {
   try {
-    if (!params.id) {
-      throw new Error("Missing product ID");
+    const id = context.params.id;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
     }
 
-    const response = await fetch(`${PRINTFUL_API}/store/products/${params.id}`, {
+    const response = await fetch(`${PRINTFUL_API}/store/products/${id}`, {
       headers: {
-        'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
-        'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`
-      }
+        Authorization: `Bearer ${PRINTFUL_TOKEN}`,
+        "X-PF-Store-Id": `${PRINTFUL_STORE_ID}`,
+      },
     });
 
     if (!response.ok) {
-      throw new Error(`Printful API request failed: ${response.status}`);
+      throw new Error(`Printful API request failed with status: ${response.status}`);
     }
 
-    const data = (await response.json()) as PrintfulAPIResponse;
+    const data: PrintfulAPIResponse = await response.json();
 
-    if (data.result) {
-      const baseName = data.result.sync_variants[0].name.split(" / ")[0];
-
-      const product: MappedProduct = {
-        id: data.result.sync_product.id,
-        name: baseName,
-        description: data.result.sync_product.description || "",
-        variants: data.result.sync_variants.map((variant) => {
-          const previewFile = variant.files.find((f) => f.type === "preview") || variant.files[0];
-
-          return {
-            id: variant.id,
-            name: variant.name,
-            size: variant.size,
-            color: variant.color,
-            price: parseFloat(variant.retail_price),
-            imageUrl: previewFile?.preview_url || null
-          };
-        }),
-      };
-
-      return NextResponse.json(product);
+    if (!data.result) {
+      throw new Error("Invalid API response structure");
     }
 
-    throw new Error("Product not found");
+    const baseName = data.result.sync_variants[0]?.name.split(" / ")[0] || "Unknown Product";
+
+    const product: MappedProduct = {
+      id: data.result.sync_product.id,
+      name: baseName,
+      description: data.result.sync_product.description || "",
+      variants: data.result.sync_variants.map((variant) => {
+        const previewFile = variant.files.find((f) => f.type === "preview") || variant.files[0];
+
+        return {
+          id: variant.id,
+          name: variant.name,
+          size: variant.size,
+          color: variant.color,
+          price: parseFloat(variant.retail_price),
+          imageUrl: previewFile?.preview_url || null,
+        };
+      }),
+    };
+
+    return NextResponse.json(product);
   } catch (error) {
     console.error("Error fetching product:", error);
     return NextResponse.json(
