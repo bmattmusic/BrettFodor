@@ -8,7 +8,6 @@ import { motion } from 'framer-motion'
 import { MiniCart } from '@/components/shop/MiniCart'
 
 export default function Navigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMiniCartVisible, setIsMiniCartVisible] = useState(false)
   const cart = useCart()
   const [mounted, setMounted] = useState(false)
@@ -28,7 +27,7 @@ export default function Navigation() {
   const handleCartMouseLeave = () => {
     miniCartTimer.current = setTimeout(() => {
       setIsMiniCartVisible(false)
-    }, 300) // Delay before hiding to allow movement to mini cart
+    }, 300)
   }
 
   const navItems = [
