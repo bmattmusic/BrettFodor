@@ -49,7 +49,7 @@ const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
 export async function GET(
   request: NextRequest,
-  context: { params: Record<string, string | undefined> } // ✅ Fixed typing for Next.js 15+
+  context: { params: { id?: string } } // ✅ Corrected Type for Next.js 15+
 ): Promise<NextResponse> {
   try {
     const id = context.params.id;
