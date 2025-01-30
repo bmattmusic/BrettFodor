@@ -1,6 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
-// ✅ Define the expected types for Printful API responses
+type RouteSegment = {
+  params: {
+    id: string;
+  };
+};
+
+// ✅ Printful API Constants
+const PRINTFUL_API = "https://api.printful.com";
+const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
+const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
+
+// ✅ Interfaces for API response structure
 interface PrintfulFile {
   type: string;
   preview_url: string;
@@ -44,29 +55,20 @@ interface MappedProduct {
   variants: MappedVariant[];
 }
 
-// ✅ Correct Next.js 15+ API Route Signature
-type RouteParams = {
-  params: {
-    id: string;
-  };
-};
-
-// ✅ Environment variables
-const PRINTFUL_API = "https://api.printful.com";
-const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
-const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
-
+// ✅ API Route Handler
 export async function GET(
-  request: NextRequest,
-  { params }: RouteParams
-): Promise<NextResponse> {
+  request: NextRequest, 
+  context: RouteSegment
+) {
   try {
-    const productId = params.id;
+    // Extract product ID from route params
+    const productId = context.params.id;
 
     if (!productId) {
       return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
     }
 
+    // Fetch product details from Printful
     const response = await fetch(`${PRINTFUL_API}/store/products/${productId}`, {
       headers: {
         Authorization: `Bearer ${PRINTFUL_TOKEN}`,
@@ -78,21 +80,22 @@ export async function GET(
       throw new Error(`Printful API request failed with status: ${response.status}`);
     }
 
-    const data: PrintfulAPIResponse = await response.json();
+    const data = await response.json() as PrintfulAPIResponse;
 
     if (!data.result) {
       throw new Error("Invalid API response structure");
     }
 
+    // Extract base product details
     const baseName = data.result.sync_variants[0]?.name.split(" / ")[0] || "Unknown Product";
 
-    // ✅ Ensure proper mapping of product data
+    // Map API response to cleaner structure
     const product: MappedProduct = {
       id: data.result.sync_product.id,
       name: baseName,
       description: data.result.sync_product.description || "",
       variants: data.result.sync_variants.map((variant) => {
-        const previewFile = variant.files.find((f) => f.type === "preview") || variant.files[0];
+        const previewFile = variant.files.find(f => f.type === "preview") || variant.files[0];
 
         return {
           id: variant.id,
