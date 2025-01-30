@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// ✅ Define the expected types for Printful API responses
 interface PrintfulFile {
   type: string;
   preview_url: string;
@@ -43,23 +44,30 @@ interface MappedProduct {
   variants: MappedVariant[];
 }
 
+// ✅ Correct Next.js 15+ API Route Signature
+type RouteParams = {
+  params: {
+    id: string;
+  };
+};
+
+// ✅ Environment variables
 const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
-// ✅ Using the correct Next.js 15+ type definition for API routes
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: RouteParams
 ): Promise<NextResponse> {
   try {
-    const id = context.params.id;
+    const productId = params.id;
 
-    if (!id) {
+    if (!productId) {
       return NextResponse.json({ error: "Missing product ID" }, { status: 400 });
     }
 
-    const response = await fetch(`${PRINTFUL_API}/store/products/${id}`, {
+    const response = await fetch(`${PRINTFUL_API}/store/products/${productId}`, {
       headers: {
         Authorization: `Bearer ${PRINTFUL_TOKEN}`,
         "X-PF-Store-Id": `${PRINTFUL_STORE_ID}`,
@@ -78,6 +86,7 @@ export async function GET(
 
     const baseName = data.result.sync_variants[0]?.name.split(" / ")[0] || "Unknown Product";
 
+    // ✅ Ensure proper mapping of product data
     const product: MappedProduct = {
       id: data.result.sync_product.id,
       name: baseName,
