@@ -48,17 +48,15 @@ const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
-interface RouteContext {
-  params: {
-    id: string;
-  };
-}
-
 export async function GET(
   request: NextRequest,
-  { params }: RouteContext
+  { params }: { params: { id: string } } // ✅ Correct typing
 ) {
   try {
+    if (!params.id) {
+      throw new Error("Missing product ID");
+    }
+
     const response = await fetch(`${PRINTFUL_API}/store/products/${params.id}`, {
       headers: {
         'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
@@ -66,18 +64,22 @@ export async function GET(
       }
     });
 
-    const data = await response.json() as PrintfulAPIResponse;
-    
+    if (!response.ok) {
+      throw new Error(`Printful API request failed: ${response.status}`);
+    }
+
+    const data = (await response.json()) as PrintfulAPIResponse;
+
     if (data.result) {
-      const baseName = data.result.sync_variants[0].name.split(' / ')[0];
-      
+      const baseName = data.result.sync_variants[0].name.split(" / ")[0];
+
       const product: MappedProduct = {
         id: data.result.sync_product.id,
         name: baseName,
-        description: data.result.sync_product.description || '',
+        description: data.result.sync_product.description || "",
         variants: data.result.sync_variants.map((variant) => {
-          const previewFile = variant.files.find(f => f.type === 'preview') || variant.files[0];
-          
+          const previewFile = variant.files.find((f) => f.type === "preview") || variant.files[0];
+
           return {
             id: variant.id,
             name: variant.name,
@@ -88,15 +90,16 @@ export async function GET(
           };
         }),
       };
-      
+
       return NextResponse.json(product);
     }
-    
-    throw new Error('Product not found');
+
+    throw new Error("Product not found");
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
-    }
-    return NextResponse.json({ error: 'Unknown error occurred' }, { status: 500 });
+    console.error("Error fetching product:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error occurred" },
+      { status: 500 }
+    );
   }
 }
