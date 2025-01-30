@@ -47,9 +47,10 @@ const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
+// ✅ Using the correct Next.js 15+ type definition for API routes
 export async function GET(
   request: NextRequest,
-  context: { params: { id?: string } } // ✅ Corrected Type for Next.js 15+
+  context: { params: { id: string } }
 ): Promise<NextResponse> {
   try {
     const id = context.params.id;
