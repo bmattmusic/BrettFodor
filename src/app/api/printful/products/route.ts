@@ -42,23 +42,25 @@ export async function GET(request: NextRequest) {
       throw new Error(`Invalid API response structure: ${JSON.stringify(data)}`);
     }
 
-    const products = data.result.map((item: any) => ({
-      id: item.id,
-      name: item.name,
-      image: item.thumbnail_url || "/assets/placeholder.png",
-      variants: Array.isArray(item.sync_variants) 
-        ? item.sync_variants.map((variant: any) => ({
-            id: variant.id,
-            name: variant.name,
-            size: variant.size,
-            color: variant.color,
-            price: parseFloat(variant.retail_price)
-          }))
-        : [],
-      price: Array.isArray(item.sync_variants) && item.sync_variants[0]
-        ? item.sync_variants[0].retail_price
-        : "0.00"
-    }));
+    const products = data.result.map((item: any) => {
+      // Get the sync product details which includes variants
+      const syncProduct = item.sync_product || item;
+      const variants = item.sync_variants || [];
+      
+      return {
+        id: syncProduct.id,
+        name: syncProduct.name,
+        image: syncProduct.thumbnail_url || item.preview_url || "/assets/placeholder.png",
+        variants: variants.map((variant: any) => ({
+          id: variant.id,
+          name: variant.name,
+          size: variant.size,
+          color: variant.color,
+          price: parseFloat(variant.retail_price)
+        })),
+        price: variants[0]?.retail_price || "26.99" // Default price if no variant price available
+      };
+    });
 
     return NextResponse.json(products);
   } catch (error) {

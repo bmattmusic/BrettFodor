@@ -6,11 +6,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'files.cdn.printful.com',
         pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'api.printful.com',
-        pathname: '/**',
       }
     ],
   },
