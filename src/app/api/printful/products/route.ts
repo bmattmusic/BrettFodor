@@ -46,6 +46,7 @@ export async function GET(request: NextRequest) {
       id: item.id,
       name: item.name,
       thumbnailUrl: item.thumbnail_url || "/assets/placeholder.png",
+      price: item.sync_variants?.[0]?.retail_price || "0.00",
       variants: Array.isArray(item.sync_variants) 
         ? item.sync_variants.map((variant: any) => ({
             id: variant.id,
