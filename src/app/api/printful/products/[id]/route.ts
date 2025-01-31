@@ -48,15 +48,9 @@ const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
-type Props = {
-  params: {
-    id: string;
-  };
-};
-
-export async function GET(request: NextRequest, { params }: Props) {
+export async function GET(_: NextRequest, context: { params: { id: string } }) {
   try {
-    const response = await fetch(`${PRINTFUL_API}/store/products/${params.id}`, {
+    const response = await fetch(`${PRINTFUL_API}/store/products/${context.params.id}`, {
       headers: {
         'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
         'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`
