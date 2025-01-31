@@ -45,17 +45,19 @@ export async function GET(request: NextRequest) {
     const products = data.result.map((item: any) => ({
       id: item.id,
       name: item.name,
-      thumbnailUrl: item.thumbnail_url || "/assets/placeholder.png",
-      price: item.sync_variants?.[0]?.retail_price || "0.00",
+      image: item.thumbnail_url || "/assets/placeholder.png",
       variants: Array.isArray(item.sync_variants) 
         ? item.sync_variants.map((variant: any) => ({
             id: variant.id,
             name: variant.name,
             size: variant.size,
             color: variant.color,
-            retail_price: variant.retail_price
+            price: parseFloat(variant.retail_price)
           }))
-        : []
+        : [],
+      price: Array.isArray(item.sync_variants) && item.sync_variants[0]
+        ? item.sync_variants[0].retail_price
+        : "0.00"
     }));
 
     return NextResponse.json(products);
