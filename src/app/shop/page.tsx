@@ -4,21 +4,18 @@ import { useEffect, useState } from 'react'
 import { ProductCard } from '@/components/shop/ProductCard'
 
 interface Variant {
-  id: number
+  id: string
   name: string
   size: string
   color: string
-  retail_price: string
-  files: Array<{
-    preview_url: string
-    type: string
-  }>
+  price: number
 }
 
 interface Product {
   id: number
   name: string
-  thumbnailUrl: string
+  image: string
+  price: string
   variants: Variant[]
 }
 
@@ -62,15 +59,9 @@ export default function ShopPage() {
             key={product.id}
             id={product.id}
             name={product.name}
-            image={product.thumbnailUrl}
-            price={product.variants[0]?.retail_price}
-            variants={product.variants.map(variant => ({
-              id: variant.id.toString(),
-              name: variant.name,
-              size: variant.size,
-              color: variant.color,
-              price: parseFloat(variant.retail_price)
-            }))}
+            image={product.image}
+            price={product.price}
+            variants={product.variants}
           />
         ))}
       </div>

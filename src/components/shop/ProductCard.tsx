@@ -19,6 +19,8 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ id, name, image, price }: ProductCardProps) {
+  console.log('ProductCard props:', { id, name, image, price });
+  
   return (
     <Link 
       href={{
