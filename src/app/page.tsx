@@ -19,7 +19,7 @@ export default function LandingPage() {
             Brett Fodor
           </h1>
           <p className="text-2xl text-gray-600 dark:text-gray-300 mb-12">
-            Leader of Software Development and Project Management Teams
+            Leader of Software Development and Product Management Teams
           </p>
 
           <div className="grid md:grid-cols-3 gap-8 mt-16">
