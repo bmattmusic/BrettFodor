@@ -12,7 +12,7 @@ export default function ProductPage({ params, searchParams }: Props) {
 
   return (
     <div className="container mx-auto px-4 py-12">
-      <ProductDetails id={productId} imageUrl={imageUrl} />
+      <ProductDetails id={productId} />
     </div>
   )
 }

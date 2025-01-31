@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16'
+  apiVersion: "2025-01-27.acacia"
 })
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
             country_code: session.shipping_details?.address?.country,
             zip: session.shipping_details?.address?.postal_code
           },
-          items: session.metadata.items ? JSON.parse(session.metadata.items) : []
+          items: session.metadata?.items ? JSON.parse(session.metadata.items) : []
         })
       })
 

@@ -9,6 +9,13 @@ interface ProductCardProps {
   name: string
   image: string
   price: string
+  variants: {
+    id: string
+    name: string
+    size: string
+    color: string
+    price: number
+  }[]
 }
 
 export function ProductCard({ id, name, image, price }: ProductCardProps) {
