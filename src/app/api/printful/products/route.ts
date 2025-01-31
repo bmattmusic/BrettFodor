@@ -1,35 +1,56 @@
-// src/app/api/printful/products/route.ts
-import { NextResponse } from "next/server";
+// src/app/api/printful/products/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
 
-interface PrintfulSyncVariant {
-  retail_price: string;
+interface PrintfulFile {
+  type: string;
+  preview_url: string;
 }
 
-interface PrintfulProduct {
+interface PrintfulVariant {
   id: number;
   name: string;
-  thumbnail_url: string;
-  sync_variants: PrintfulSyncVariant[];
+  size: string;
+  color: string;
+  retail_price: string;
+  files: PrintfulFile[];
+}
+
+interface PrintfulSyncProduct {
+  id: number;
+  name: string;
+  description?: string;
 }
 
 interface PrintfulAPIResponse {
-  result: PrintfulProduct[];
+  result: {
+    sync_product: PrintfulSyncProduct;
+    sync_variants: PrintfulVariant[];
+  };
+}
+
+interface MappedVariant {
+  id: number;
+  name: string;
+  size: string;
+  color: string;
+  price: number;
+  imageUrl: string | null;
 }
 
 interface MappedProduct {
   id: number;
   name: string;
-  thumbnailUrl: string;
-  retailPrice: number;
+  description: string;
+  variants: MappedVariant[];
 }
 
 const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
-export async function GET() {
+export async function GET(_: NextRequest, context: { params: { id: string } }) {
   try {
-    const response = await fetch(`${PRINTFUL_API}/store/products`, {
+    const response = await fetch(`${PRINTFUL_API}/store/products/${context.params.id}`, {
       headers: {
         'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
         'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`
@@ -39,18 +60,30 @@ export async function GET() {
     const data = await response.json() as PrintfulAPIResponse;
     
     if (data.result) {
-      const products: MappedProduct[] = data.result.map((item) => ({
-        id: item.id,
-        name: item.name,
-        thumbnailUrl: item.thumbnail_url,
-        retailPrice: item.sync_variants?.[0]?.retail_price ? 
-          parseFloat(item.sync_variants[0].retail_price) : 26.50
-      }));
-
-      return NextResponse.json(products);
+      const baseName = data.result.sync_variants[0].name.split(' / ')[0];
+      
+      const product: MappedProduct = {
+        id: data.result.sync_product.id,
+        name: baseName,
+        description: data.result.sync_product.description || '',
+        variants: data.result.sync_variants.map((variant) => {
+          const previewFile = variant.files.find(f => f.type === 'preview') || variant.files[0];
+          
+          return {
+            id: variant.id,
+            name: variant.name,
+            size: variant.size,
+            color: variant.color,
+            price: parseFloat(variant.retail_price),
+            imageUrl: previewFile?.preview_url || null
+          };
+        }),
+      };
+      
+      return NextResponse.json(product);
     }
     
-    throw new Error('Invalid API response structure');
+    throw new Error('Product not found');
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
