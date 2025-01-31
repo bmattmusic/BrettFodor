@@ -18,10 +18,11 @@ export const metadata: Metadata = {
     siteName: 'Brett Fodor',
     images: [
       {
-        url: '/og-image.jpg',  // This should be a public URL to your image
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
         alt: 'Brett Fodor',
+        type: 'image/jpeg',
       },
     ],
     locale: 'en_US',
