@@ -8,6 +8,7 @@ import { Metadata } from 'next'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://brettfodor.com'),
   title: 'Brett Fodor',
   description: 'Professional Portfolio and Shop',
   openGraph: {
