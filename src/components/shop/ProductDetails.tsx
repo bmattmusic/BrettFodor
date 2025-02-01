@@ -30,11 +30,13 @@ interface ProductDetailsProps {
 
 export function ProductDetails({ id, initialProduct }: ProductDetailsProps) {
   const [product, setProduct] = useState<Product | null>(initialProduct || null)
-  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(
+    initialProduct?.variants[0] || null
+  )
   const [quantity, setQuantity] = useState(1)
   const cart = useCart()
   const toast = useToast()
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(!initialProduct)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -57,6 +59,8 @@ export function ProductDetails({ id, initialProduct }: ProductDetailsProps) {
         }
       }
       fetchProduct()
+    } else {
+      setIsLoading(false)
     }
   }, [id, initialProduct])
 
