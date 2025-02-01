@@ -12,7 +12,10 @@ export default async function ProductPage({ params }: { params: { id: string } }
   
   return (
     <div className="container mx-auto px-4 py-12">
-      <ProductDetails initialProduct={product} />
+      <ProductDetails 
+        id={params.id}
+        initialProduct={product} 
+      />
     </div>
   )
 }
