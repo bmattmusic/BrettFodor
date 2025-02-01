@@ -18,35 +18,38 @@ export default async function ProductPage({ params }: { params: { id: string } }
 }
 
 async function fetchProduct(id: string) {
-  const res = await fetch(`${process.env.VERCEL_URL || 'http://localhost:3000'}/api/printful/products/${id}`)
+  const baseUrl = process.env.VERCEL_URL 
+    ? `https://${process.env.VERCEL_URL}` 
+    : 'http://localhost:3000';
+    
+  const res = await fetch(`${baseUrl}/api/printful/products/${id}`)
   if (!res.ok) throw new Error('Failed to fetch product')
   return res.json()
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  // Fetch product data
-  const product = await fetchProduct(params.id) // You'll need to implement this
+  const product = await fetchProduct(params.id)
 
   return {
-    title: product.name,
-    description: product.description,
+    title: product.name || 'Product Details',
+    description: product.description || 'View product details and options',
     openGraph: {
-      title: product.name,
-      description: product.description,
+      title: product.name || 'Product Details',
+      description: product.description || 'View product details and options',
       images: [
         {
-          url: product.image,
+          url: product.image || '/og-image.jpg',
           width: 1200,
           height: 630,
-          alt: product.name,
+          alt: product.name || 'Product Image',
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: product.name,
-      description: product.description,
-      images: [product.image],
+      title: product.name || 'Product Details',
+      description: product.description || 'View product details and options',
+      images: [product.image || '/og-image.jpg'],
     },
   }
 }

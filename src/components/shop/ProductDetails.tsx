@@ -24,7 +24,7 @@ interface Product {
 }
 
 interface ProductDetailsProps {
-  id: string
+  id: string | number
 }
 
 export function ProductDetails({ id }: ProductDetailsProps) {
@@ -33,14 +33,25 @@ export function ProductDetails({ id }: ProductDetailsProps) {
   const [quantity, setQuantity] = useState(1)
   const cart = useCart()
   const toast = useToast()
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     async function fetchProduct() {
-      const res = await fetch(`/api/printful/products/${id}`)
-      const data = await res.json()
-      setProduct(data)
-      if (data.variants.length > 0) {
-        setSelectedVariant(data.variants[0])
+      try {
+        setIsLoading(true)
+        setError(null)
+        const res = await fetch(`/api/printful/products/${id}`)
+        if (!res.ok) throw new Error('Failed to fetch product')
+        const data = await res.json()
+        setProduct(data)
+        if (data.variants.length > 0) {
+          setSelectedVariant(data.variants[0])
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load product')
+      } finally {
+        setIsLoading(false)
       }
     }
     fetchProduct()
@@ -64,9 +75,15 @@ export function ProductDetails({ id }: ProductDetailsProps) {
     }
   }
 
-  if (!product) return (
+  if (isLoading) return (
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+    </div>
+  )
+
+  if (error) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p className="text-red-500">{error}</p>
     </div>
   )
 

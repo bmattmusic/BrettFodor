@@ -1,51 +1,56 @@
-import { type NextRequest } from 'next/server'
-import { NextResponse } from 'next/server'
-import { type RouteParams, type PrintfulAPIResponse, type MappedProduct } from '@/types/printful'
-
-const PRINTFUL_API = "https://api.printful.com"
-const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN
-const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID
+import { NextResponse } from "next/server";
 
 export async function GET(
-  _request: NextRequest,
-  { params }: RouteParams
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const response = await fetch(`${PRINTFUL_API}/store/products/${params.id}`, {
-      headers: {
-        'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
-        'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`
+    const response = await fetch(
+      `https://api.printful.com/store/products/${params.id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.PRINTFUL_TOKEN}`,
+          "X-PF-Store-Id": `${process.env.PRINTFUL_STORE_ID}`,
+        },
       }
-    })
+    );
 
-    const data = await response.json() as PrintfulAPIResponse
+    if (!response.ok) {
+      throw new Error("Failed to fetch product");
+    }
+
+    const data = await response.json();
     
-    if (data.result) {
-      const baseName = data.result.sync_variants[0].name.split(' / ')[0]
-      
-      const product: MappedProduct = {
-        id: data.result.sync_product.id,
-        name: baseName,
-        description: data.result.sync_product.description || '',
-        variants: data.result.sync_variants.map((variant) => {
-          const previewFile = variant.files.find(f => f.type === 'preview') || variant.files[0]
-          
-          return {
-            id: variant.id,
-            name: variant.name,
-            size: variant.size,
-            color: variant.color,
-            price: parseFloat(variant.retail_price),
-            imageUrl: previewFile?.preview_url || null
-          }
-        }),
-      }
-      
-      return NextResponse.json(product)
+    if (!data.result?.sync_product) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
     }
     
-    throw new Error('Product not found')
-  } catch {
-    return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 })
+    // Transform the data to match ProductDetails interface
+    const product = {
+      id: data.result.sync_product.id,
+      name: data.result.sync_product.name,
+      description: data.result.sync_product.description || "No description available",
+      variants: (data.result.sync_variants || []).map((variant: any) => ({
+        id: variant.id,
+        name: variant.name,
+        size: variant.size || 'One Size',
+        color: variant.color || 'Default',
+        price: parseFloat(variant.retail_price || '0'),
+        imageUrl: variant.files?.find((f: any) => f.type === "preview")?.preview_url 
+          || variant.files?.[0]?.preview_url 
+          || '/placeholder.jpg'
+      }))
+    };
+
+    return NextResponse.json(product);
+  } catch (error) {
+    console.error("Error fetching product:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch product details" },
+      { status: 500 }
+    );
   }
 }
