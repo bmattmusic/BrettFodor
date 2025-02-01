@@ -1,22 +1,27 @@
 import { NextResponse } from "next/server";
 
+const PRINTFUL_API = "https://api.printful.com";
+const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
+const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
     const response = await fetch(
-      `https://api.printful.com/store/products/${params.id}`,
+      `${PRINTFUL_API}/store/products/${params.id}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PRINTFUL_TOKEN}`,
-          "X-PF-Store-Id": `${process.env.PRINTFUL_STORE_ID}`,
+          'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
+          'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`,
         },
+        next: { revalidate: 0 }
       }
     );
 
     if (!response.ok) {
-      throw new Error("Failed to fetch product");
+      throw new Error(`Printful API error: ${response.status}`);
     }
 
     const data = await response.json();

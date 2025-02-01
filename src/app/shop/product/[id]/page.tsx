@@ -28,19 +28,10 @@ async function fetchProduct(id: string) {
       : 'https://brettfodor.com';
       
   try {
-    const res = await fetch(`${baseUrl}/api/printful/products/${id}`, {
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Authorization': `Bearer ${process.env.PRINTFUL_TOKEN}`,
-        'X-PF-Store-Id': `${process.env.PRINTFUL_STORE_ID}`,
-      },
-      next: { revalidate: 0 }
-    });
+    const res = await fetch(`${baseUrl}/api/printful/products/${id}`);
     
     if (!res.ok) {
-      console.error('Response status:', res.status);
-      console.error('Response headers:', Object.fromEntries(res.headers.entries()));
-      throw new Error(`Failed to fetch product: ${res.status} ${res.statusText}`);
+      throw new Error(`Failed to fetch product: ${res.status}`);
     }
     
     return res.json();
