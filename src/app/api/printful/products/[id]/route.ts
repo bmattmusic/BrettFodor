@@ -8,20 +8,41 @@ export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
+  // Debug environment variables
+  console.log('API Route Environment:', {
+    hasToken: !!PRINTFUL_TOKEN,
+    hasStoreId: !!PRINTFUL_STORE_ID,
+    tokenLength: PRINTFUL_TOKEN?.length,
+    id: params.id
+  });
+
   try {
-    const response = await fetch(
-      `${PRINTFUL_API}/store/products/${params.id}`,
-      {
-        headers: {
-          'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
-          'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`,
-        },
-        next: { revalidate: 0 }
+    const apiUrl = `${PRINTFUL_API}/store/products/${params.id}`;
+    const headers = {
+      'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
+      'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`,
+    };
+
+    // Debug request
+    console.log('Making Printful request:', {
+      url: apiUrl,
+      headers: {
+        ...headers,
+        'Authorization': 'Bearer [REDACTED]' // Don't log the actual token
       }
-    );
+    });
+
+    const response = await fetch(apiUrl, { headers });
 
     if (!response.ok) {
-      throw new Error(`Printful API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Printful API error:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: errorText,
+        headers: Object.fromEntries(response.headers)
+      });
+      throw new Error(`Printful API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

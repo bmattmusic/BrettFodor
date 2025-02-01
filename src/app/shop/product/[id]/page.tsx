@@ -28,9 +28,16 @@ async function fetchProduct(id: string) {
       : 'https://brettfodor.com';
       
   try {
-    const res = await fetch(`${baseUrl}/api/printful/products/${id}`);
+    const res = await fetch(`${baseUrl}/api/printful/products/${id}`, {
+      cache: 'no-store'
+    });
     
     if (!res.ok) {
+      const errorText = await res.text();
+      console.error('API response:', {
+        status: res.status,
+        text: errorText
+      });
       throw new Error(`Failed to fetch product: ${res.status}`);
     }
     
