@@ -20,7 +20,6 @@ interface Product {
 }
 
 export const dynamic = 'force-dynamic'
-export const revalidate = 0
 
 export default function ShopPage() {
   const [products, setProducts] = useState<Product[]>([])

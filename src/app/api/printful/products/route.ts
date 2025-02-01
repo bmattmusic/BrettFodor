@@ -4,8 +4,7 @@ const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
-export const dynamic = 'force-dynamic'; // Disable caching
-export const revalidate = 0; // Disable caching
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
