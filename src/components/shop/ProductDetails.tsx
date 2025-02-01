@@ -25,10 +25,11 @@ interface Product {
 
 interface ProductDetailsProps {
   id: string | number
+  initialProduct?: Product
 }
 
-export function ProductDetails({ id }: ProductDetailsProps) {
-  const [product, setProduct] = useState<Product | null>(null)
+export function ProductDetails({ id, initialProduct }: ProductDetailsProps) {
+  const [product, setProduct] = useState<Product | null>(initialProduct || null)
   const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null)
   const [quantity, setQuantity] = useState(1)
   const cart = useCart()
@@ -37,25 +38,27 @@ export function ProductDetails({ id }: ProductDetailsProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    async function fetchProduct() {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const res = await fetch(`/api/printful/products/${id}`)
-        if (!res.ok) throw new Error('Failed to fetch product')
-        const data = await res.json()
-        setProduct(data)
-        if (data.variants.length > 0) {
-          setSelectedVariant(data.variants[0])
+    if (!initialProduct) {
+      async function fetchProduct() {
+        try {
+          setIsLoading(true)
+          setError(null)
+          const res = await fetch(`/api/printful/products/${id}`)
+          if (!res.ok) throw new Error('Failed to fetch product')
+          const data = await res.json()
+          setProduct(data)
+          if (data.variants.length > 0) {
+            setSelectedVariant(data.variants[0])
+          }
+        } catch (err) {
+          setError(err instanceof Error ? err.message : 'Failed to load product')
+        } finally {
+          setIsLoading(false)
         }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load product')
-      } finally {
-        setIsLoading(false)
       }
+      fetchProduct()
     }
-    fetchProduct()
-  }, [id])
+  }, [id, initialProduct])
 
   const handleQuantityChange = (newQuantity: number) => {
     setQuantity(Math.max(1, Math.min(10, newQuantity)))

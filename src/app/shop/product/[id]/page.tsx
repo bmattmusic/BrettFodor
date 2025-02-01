@@ -8,11 +8,11 @@ interface Props {
 }
 
 export default async function ProductPage({ params }: { params: { id: string } }) {
-  const productId = params.id
+  const product = await fetchProduct(params.id)
   
   return (
     <div className="container mx-auto px-4 py-12">
-      <ProductDetails id={productId} />
+      <ProductDetails initialProduct={product} />
     </div>
   )
 }
@@ -22,17 +22,21 @@ async function fetchProduct(id: string) {
     ? `https://${process.env.VERCEL_URL}`
     : process.env.NODE_ENV === 'development'
       ? 'http://localhost:3000'
-      : 'https://brettfodor.com';  // Replace with your production domain
+      : 'https://brettfodor.com';
       
   try {
     const res = await fetch(`${baseUrl}/api/printful/products/${id}`, {
       headers: {
         'Cache-Control': 'no-cache',
+        'Authorization': `Bearer ${process.env.PRINTFUL_TOKEN}`,
+        'X-PF-Store-Id': `${process.env.PRINTFUL_STORE_ID}`,
       },
       next: { revalidate: 0 }
     });
     
     if (!res.ok) {
+      console.error('Response status:', res.status);
+      console.error('Response headers:', Object.fromEntries(res.headers.entries()));
       throw new Error(`Failed to fetch product: ${res.status} ${res.statusText}`);
     }
     
