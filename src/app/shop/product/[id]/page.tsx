@@ -21,22 +21,23 @@ export default async function ProductPage({ params }: { params: { id: string } }
 }
 
 async function fetchProduct(id: string) {
-  const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}`
-    : process.env.NODE_ENV === 'development'
-      ? 'http://localhost:3000'
-      : 'https://brettfodor.com';
+  const baseUrl = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:3000'
+    : 'https://brettfodor.com';  // Use your actual domain
       
   try {
     const res = await fetch(`${baseUrl}/api/printful/products/${id}`, {
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        'Accept': 'application/json'
+      }
     });
     
     if (!res.ok) {
       const errorText = await res.text();
       console.error('API response:', {
         status: res.status,
-        text: errorText
+        text: errorText.substring(0, 200) // Only log first 200 chars
       });
       throw new Error(`Failed to fetch product: ${res.status}`);
     }

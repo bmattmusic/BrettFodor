@@ -4,6 +4,9 @@ const PRINTFUL_API = "https://api.printful.com";
 const PRINTFUL_TOKEN = process.env.PRINTFUL_TOKEN;
 const PRINTFUL_STORE_ID = process.env.PRINTFUL_STORE_ID;
 
+export const dynamic = 'force-dynamic'; // Disable static optimization
+export const runtime = 'edge'; // Optional: Use edge runtime
+
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
@@ -21,6 +24,8 @@ export async function GET(
     const headers = {
       'Authorization': `Bearer ${PRINTFUL_TOKEN}`,
       'X-PF-Store-Id': `${PRINTFUL_STORE_ID}`,
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
     };
 
     // Debug request
@@ -32,7 +37,10 @@ export async function GET(
       }
     });
 
-    const response = await fetch(apiUrl, { headers });
+    const response = await fetch(apiUrl, { 
+      headers,
+      cache: 'no-store'
+    });
 
     if (!response.ok) {
       const errorText = await response.text();
