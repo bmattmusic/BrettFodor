@@ -19,12 +19,28 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
 async function fetchProduct(id: string) {
   const baseUrl = process.env.VERCEL_URL 
-    ? `https://${process.env.VERCEL_URL}` 
-    : 'http://localhost:3000';
+    ? `https://${process.env.VERCEL_URL}`
+    : process.env.NODE_ENV === 'development'
+      ? 'http://localhost:3000'
+      : 'https://brettfodor.com';  // Replace with your production domain
+      
+  try {
+    const res = await fetch(`${baseUrl}/api/printful/products/${id}`, {
+      headers: {
+        'Cache-Control': 'no-cache',
+      },
+      next: { revalidate: 0 }
+    });
     
-  const res = await fetch(`${baseUrl}/api/printful/products/${id}`)
-  if (!res.ok) throw new Error('Failed to fetch product')
-  return res.json()
+    if (!res.ok) {
+      throw new Error(`Failed to fetch product: ${res.status} ${res.statusText}`);
+    }
+    
+    return res.json();
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    throw new Error('Failed to fetch product');
+  }
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
