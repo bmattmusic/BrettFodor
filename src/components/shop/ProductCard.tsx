@@ -23,10 +23,7 @@ export function ProductCard({ id, name, image, price }: ProductCardProps) {
   
   return (
     <Link 
-      href={{
-        pathname: `/shop/product/${id}`,
-        query: { image }
-      }}
+      href={`/shop/product/${id}`}
       className="group overflow-hidden rounded-lg border bg-white shadow-sm hover:shadow-md transition-shadow"
     >
       <div className="aspect-square relative">

@@ -7,10 +7,9 @@ interface Props {
   searchParams: { image?: string }
 }
 
-export default function ProductPage({ params, searchParams }: Props) {
-  const productId = use(Promise.resolve(params.id))
-  const imageUrl = use(Promise.resolve(searchParams.image))
-
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const productId = params.id
+  
   return (
     <div className="container mx-auto px-4 py-12">
       <ProductDetails id={productId} />
