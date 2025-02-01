@@ -8,7 +8,11 @@ import { Metadata } from 'next'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://brettfodor.com'),
+  metadataBase: new URL(
+    process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}`
+      : 'http://localhost:3000'
+  ),
   title: 'Brett Fodor',
   description: 'Professional Portfolio and Shop',
   openGraph: {
