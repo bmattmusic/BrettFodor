@@ -87,6 +87,12 @@ export function ProductDetails({ id }: ProductDetailsProps) {
     </div>
   )
 
+  if (!product) return (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <p>No product found</p>
+    </div>
+  )
+
   const sizes = Array.from(new Set(product.variants.map(v => v.size))).sort()
   const colors = Array.from(new Set(product.variants.map(v => v.color))).sort()
 
