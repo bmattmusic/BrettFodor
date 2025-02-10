@@ -39,6 +39,7 @@ const projects = [
     hoverDescription:"The virtual playground for exploring your flavor profile and custom product recommendations",
     image: "/assets/innovation.webp",
     tags: ["CMS Development", "Innovation", "Enterprise Software"],
+    url: "https://www.jmsmucker.com",
   },
   {
     title: "Vigeo Gardens Hydroponic Pod Farm Monitoring System",
@@ -47,7 +48,7 @@ const projects = [
     hoverDescription:"Growing Embryos in heads of lettuce is as complicated as it sounds. Learn about the IOT product and platform that enabled VG to create amazing innovation in hydroponic farming",
     image: "/assets/vigeo.webp",
     tags: ["Game Design", "Kickstarter", "Product Launch"],
-    url: "https://www.kickstarter.com/projects/caution/dino-duel-a-card-game-with-dice-dinos-and-extincti",
+    url: "https://vigeogardens.com",
   },
   {
     title: "Dino Duel – Board Game Development & Global Fulfillment",
